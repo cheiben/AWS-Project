@@ -1,0 +1,116 @@
+DEPLOY A RELIABLE MULTI-TIER INFRASTRUCTURE USING CLOUDFORMATION
+
+Introduction
+This hands-on lab will guide you through the steps to improve reliability of a service by using automation to deploy a reliable cloud infrastructure. When this lab is completed, you will have deployed two CloudFormation templates. The first will deploy an Amazon Virtual Private Cloud (VPC). The second will deploy into your VPC, a reliable 3-tier infrastructure using Amazon EC2 distributed across three Availability Zones. You will then review the features of the deployed infrastructure and learn how they contribute to reliability.
+
+The skills you learn will help you build resilient workloads in alignment with the AWS Well-Architected Framework best practices for reliability: https://aws.amazon.com/architecture/well-architected/
+
+The architecture of the infrastructure you will deploy is represented by this diagram:
+
+![Alt text](image.png)
+
+Goals
+By the end of this lab, you will be able to:
+
+Automate infrastructure deployment for a workload
+Understand how the deployed workload infrastructure contributes to reliability of the workload
+
+                                               =================== Work flow ===================
+
+
+Steps:
++Deploy VPC using CloudFormation
++Deploy Web Application and Infrastructure using CloudFormation
++Explore the Web Application
+
+
+
+1 DEPLOY VPC USING CLOUDFORMATION
+
+1.1 Log into the AWS console
+
+1.2 Configure your AWS Region
+Select the Ohio region. This region is also known as us-east-2, which you will see referenced throughout this lab.
+
+![Alt text](image-1.png)
+
+1.3 Deploy the VPC infrastructure
+This step will create the VPC and all components using the example CloudFormation template.
+
+a. Download the latest version of the CloudFormation template here: [vpc-cft.yaml](vpc-cft.yaml)
+b. Sign in to the AWS Management Console, select your preferred region, and open the CloudFormation console at https://console.aws.amazon.com/cloudformation/.
+c. Click Create Stack, then With new resources (standard).
+![Alt text](image-2.png)
+
+d. Enter the following details:
+Stack name: The name of this stack. For this lab, use WebApp1-VPC and match the case.
+Parameters: Parameters may be left as defaults, you can find out more in the description for each.
+
+2 DEPLOY WEB APPLICATION AND INFRASTRUCTURE USING CLOUDFORMATION
+
+Wait until the VPC CloudFormation stack status is CREATE_COMPLETE, then continue. This will take about four minute
+
+2.1 Download the CloudFormation template [Title](webapp-infra.yaml)
+
+2.2  Click Create Stack, then With new resources (standard)
+
+![Alt text](image-3.png)
+
+3 EXPLORE THE WEB APPLICATION
+
+3.1 Go to the AWS CloudFormation console at https://console.aws.amazon.com/cloudformation.
+
++ Wait until CloudFormationLab stack status is  CREATE_COMPLETE before proceeding. This should take about four minutes
++ Click on the CloudFormationLab stack
++ Click on the Outputs tab
++ For the Key WebsiteURL copy the value. This is the URL of your test web service
+
+![Alt text](image-4.png)
+
+3.2 Click the URL and it will bring up the website:
+
+![Alt text](image-5.png)
+
+3.3 The website simulates a recommendation engine making personalized suggestions for classic television shows. You should note the following features:
+
+a. Area A shows the personalized recommendation
+
+** It shows first name of the user and the show that was recommended
+** The workshop simulation is simple. On every request it chooses a user at random, and shows a recommendation statically mapped to that user. The user names, television show names, and this mapping are in a DynamoDB table, which is simulating the RecommendationService
+
+b. Area B shows metadata which is useful to you during the lab
+
+**The instance_id and availability_zone enable you to see which EC2 server and Availability Zone were used for each request
+
+3.4 Use the following architectural diagram as you explore the site
+
+![Alt text](image-6.png)
+
++++ Labeling explaination 
+
+A - There is one EC2 instance deployed per Availability Zone
+B - Refresh the website several times, note that the EC2 instance and Availability Zone change from among the three available
+C - Elastic Load Balancing (ELB) is used here. An Application Load Balancer receives each request and distributes it among the available EC2 server instances across Availability Zones.
+The requests are stateless, and therefore can be routed to any of the available EC2 instances
+D - The EC2 instances are in an Amazon EC2 Auto Scaling Group. This Auto Scaling Group was configured to maintain three instances, therefore if one instance is detected as unhealthy it will be replaced to maintain three healthy instances.
+AWS Auto Scaling can also be configured to scale up/down dynamically in response to workload considerations such as CPU utilization or request count.
+
+
+*************************************************** END**********************************************************************************
+
+
+Well-Architected for Reliability: Best practices
+
+Use highly available network connectivity for your workload public endpoints: These endpoints and the routing to them must be highly available. You used Elastic Load Balancing which provides load balancing across Availability Zones, performs Layer 4 (TCP) or Layer 7 (http/https) routing, integrates with AWS WAF, and integrates with AWS Auto Scaling to help create a self-healing infrastructure and absorb increases in traffic while releasing resources when traffic decreases.
+Implement loosely coupled dependencies: Dependencies such as… load balancers are loosely coupled. Loose coupling helps isolate behavior of a component from other components that depend on it, increasing resiliency and agility.
+Deploy the workload to multiple locations: Distribute workload data and resources across multiple Availability Zones or, where necessary, across AWS Regions. These locations can be as diverse as required.
+Automate healing on all layers: Upon detection of a failure, use automated capabilities to perform actions to remediate it
+You have deployed the cloud infrastructure architecture that can support a high reliability workload
+
+This an example architecture of the cloud infrastructure necessary for reliable workloads
+
+Addition of dynamic auto scaling would further improve reliability
+
+Reliability also depends on software architecture, network configuration, operational excellence, and testing (especially Chaos Engineering which tests resilience), which are outside the scope of this lab.
+
+Without best practices for all of these, which can be found in the Reliability pillar of the AWS Well-Architected Framework, the workload will not achieve high reliability goals.
